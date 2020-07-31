@@ -1,0 +1,30 @@
+html {
+    height: 100%;
+}
+.container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+}
+
+button {
+    background-color: dodgerblue;
+    border-radius: 5px;
+    border-width: 1px 1px 1px 1px;
+    padding: 5px 10px 5px 10px;
+    color: #fff;
+    font-size: 20px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+h1 {
+    color: red;
+    margin-bottom: -10px;
+}
+h2 {
+    margin-bottom: 0px;
+    text-decoration: underline;
+}
+    
