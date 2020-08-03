@@ -1,13 +1,8 @@
 import React, { useState, useCallback, useRef } from "react";
 import produce from "immer";
 import './App.css';
-
-const numRows = 28;
+const numRows = 30;
 const numColumns = 50;
-const initialAliveColor = {
-  color: "turquoise",
-  code: { hex: "#7fffd4" }
-};
 
 //checks neighbor cells across the grid
 const operations = [
@@ -34,7 +29,6 @@ const App = () =>  {
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(100);
   const [generation, setGeneration] = useState(0);
-  const [aliveColor,setAliveColor] = useState(initialAliveColor) 
   const [grid, setGrid] = useState(() => {
     return emptyGrid();
   });
@@ -50,13 +44,16 @@ generationRef.current = generation
 const speedRef = useRef(speed)
 speedRef.current = speed
 
+const step = () => {
+  setGeneration((generation) => generation + 1)
+}
+
 const runGame = useCallback(() => {
   // If it's not running end game
   if (!runningRef.current) {
     return;
   }
   //uses recursive to update the state
-
   setGrid((g) => {
     return produce(g, (gridCopy) => {
       for (let i = 0; i < numRows; i++) {
@@ -84,8 +81,40 @@ const runGame = useCallback(() => {
   }
   );
   setGeneration(++generationRef.current);
-  setTimeout(runGame, speedRef.current);}, []);
+  setTimeout(runGame, speedRef.current);}
+  , []);
 
+  const stepThrough = useCallback(() => {
+    if(!runningRef.current) {
+        return
+    }
+    setGrid((currentGrid) => {
+        return produce(currentGrid, gridCopy => {
+            for(let i = 0; i < numRows; i++) {
+                for(let j = 0; j < numColumns; j++) {
+                    let neighbors = 0;
+                    operations.forEach(([x, y]) => {
+                        const newI = i + x;
+                        const newJ = j + y;
+                        if(newI >= 0 && newI < numRows && newJ >= 0 && newJ < numColumns) {
+                            neighbors += currentGrid[newI][newJ]
+                        }
+                    })
+                    if(!currentGrid[i][j] && neighbors === 3) {
+                        gridCopy[i][j] = 1;
+                    } else if(currentGrid[i][j] && neighbors >= 2 && neighbors <= 3) {
+                        gridCopy[i][j] = 1;
+                    } else {
+                        gridCopy[i][j] = 0;
+                    }
+                }
+            }
+        })
+    })
+    step();
+}, [])
+
+  
 return (
   <>
     <div className='container'>
@@ -95,6 +124,7 @@ return (
          <li>Any dead cell with three live neighbours becomes a live cell.</li>
          <li>All other live cells die in the next generation. Similarly, all other dead cells stay dead.</li>
 <div className='controlbuttons'>
+  {/* Start and Stop the Game */}
     <button onClick={() => {
         setRunning(!running)
           if (!running){
@@ -106,6 +136,7 @@ return (
     >
     {running ? 'stop' : 'start'}
     </button>
+
     {/* creates a random seed */}
     <button
     onClick={() => {
@@ -128,6 +159,7 @@ return (
     >
     clear
     </button>
+
     {/* slows down the movents */}
     <button
           onClick={() => {
@@ -140,6 +172,7 @@ return (
         >
         Speed -
         </button>
+
         {/* speeds up the movements */}
         <button
           onClick={() => {
@@ -154,6 +187,19 @@ return (
         >
         Speed +
         </button>
+        <button
+        onClick={() => {
+          if(!running) {
+            setRunning(true)
+            runningRef.current = true;
+            stepThrough()
+            setRunning(false)
+            runningRef.current = false
+        }
+        }}>
+          step
+        </button>
+        
     </div>
 
 
