@@ -91,28 +91,31 @@ const runGame = useCallback(() => {
         return
     }
     setGrid((g) => {
-      return produce(g, gridCopy => {
-        for(let i = 0; i < numRows; i++) {
-          for(let j = 0; j < numColumns; j++) {
+      return produce(g, (gridCopy) => {
+        for (let i = 0; i < numRows; i++) {
+          for (let j = 0; j < numColumns; j++) {
+            //Figure out how many neighbors each cell has
             let neighbors = 0;
             operations.forEach(([x, y]) => {
-                const newI = i + x;
-                const newJ = j + y;
-                if(newI >= 0 && newI < numRows && newJ >= 0 && newJ < numColumns) {
-                  neighbors += g[newI][newJ]
-                }
-            })
-            if(!g[i][j] && neighbors === 3) {
+              const newI = i + x;
+              const newJ = j + y;
+              //Bounds of your grid to make sure it doesnt go above or below
+              if (newI >= 0 && newI < numRows && newJ >= 0 && newJ < numColumns) {
+                neighbors += g[newI][newJ];
+              }
+            });
+            //If current cell is dead, but has 3 neighbors it comes alive
+            if (neighbors < 2 || neighbors > 3) {
+              gridCopy[i][j] = 0;
+            } else if (g[i][j] === 0 && neighbors === 3) {
               gridCopy[i][j] = 1;
-            } else if(g[i][j] && neighbors >= 2 && neighbors <= 3) {
-              gridCopy[i][j] = 1;
-            } else {
-               gridCopy[i][j] = 0;
             }
           }
         }
-      })
-    })
+      });
+      
+    }
+    );
     generationStep();
 }, [])
 
