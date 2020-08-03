@@ -24,7 +24,7 @@ const emptyGrid = () => {
   }
   return rows;
 };
-
+// setting up states
 const App = () =>  {
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(100);
@@ -44,7 +44,8 @@ generationRef.current = generation
 const speedRef = useRef(speed)
 speedRef.current = speed
 
-const step = () => {
+// makes the generation count go up by 1
+const generationStep = () => {
   setGeneration((generation) => generation + 1)
 }
 
@@ -81,37 +82,38 @@ const runGame = useCallback(() => {
   }
   );
   setGeneration(++generationRef.current);
-  setTimeout(runGame, speedRef.current);}
-  , []);
+  setTimeout(runGame, speedRef.current);
+  
+}, []);
 
-  const stepThrough = useCallback(() => {
+  const step = useCallback(() => {
     if(!runningRef.current) {
         return
     }
-    setGrid((currentGrid) => {
-        return produce(currentGrid, gridCopy => {
-            for(let i = 0; i < numRows; i++) {
-                for(let j = 0; j < numColumns; j++) {
-                    let neighbors = 0;
-                    operations.forEach(([x, y]) => {
-                        const newI = i + x;
-                        const newJ = j + y;
-                        if(newI >= 0 && newI < numRows && newJ >= 0 && newJ < numColumns) {
-                            neighbors += currentGrid[newI][newJ]
-                        }
-                    })
-                    if(!currentGrid[i][j] && neighbors === 3) {
-                        gridCopy[i][j] = 1;
-                    } else if(currentGrid[i][j] && neighbors >= 2 && neighbors <= 3) {
-                        gridCopy[i][j] = 1;
-                    } else {
-                        gridCopy[i][j] = 0;
-                    }
+    setGrid((g) => {
+      return produce(g, gridCopy => {
+        for(let i = 0; i < numRows; i++) {
+          for(let j = 0; j < numColumns; j++) {
+            let neighbors = 0;
+            operations.forEach(([x, y]) => {
+                const newI = i + x;
+                const newJ = j + y;
+                if(newI >= 0 && newI < numRows && newJ >= 0 && newJ < numColumns) {
+                  neighbors += g[newI][newJ]
                 }
+            })
+            if(!g[i][j] && neighbors === 3) {
+              gridCopy[i][j] = 1;
+            } else if(g[i][j] && neighbors >= 2 && neighbors <= 3) {
+              gridCopy[i][j] = 1;
+            } else {
+               gridCopy[i][j] = 0;
             }
-        })
+          }
+        }
+      })
     })
-    step();
+    generationStep();
 }, [])
 
   
@@ -187,12 +189,13 @@ return (
         >
         Speed +
         </button>
+        {/* able to run the game 1 step at a time */}
         <button
         onClick={() => {
           if(!running) {
             setRunning(true)
             runningRef.current = true;
-            stepThrough()
+            step()
             setRunning(false)
             runningRef.current = false
         }
